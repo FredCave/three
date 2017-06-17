@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Rocks</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+	<script src="assets/js/Three.js"></script>
+	<!-- DETECTS WEBGL SUPPORT -->
+	<script src="assets/js/Detector.js"></script>
+
+	<!-- CAMERA MANIPULATION?? -->
+	<script src="assets/js/OrbitControls.js"></script>
+	<script src="assets/js/THREEx.KeyboardState.js"></script>
+	<script src="assets/js/THREEx.FullScreen.js"></script>
+	<script src="assets/js/THREEx.WindowResize.js"></script>
+
+	<!-- Contains Lookup Tables for the Marching Cubes Algorithm -->
+	<script src="assets/js/MarchingCubesData.js"></script>
+
+	<!-- GUI for experimenting with values -->		
+	<script type='text/javascript' src='assets/js/DAT.GUI.min.js'></script>
+
+	<script src="assets/js/shaders/FresnelShader.js"></script>
+
+	<script src="assets/js/jquery-1.9.1.js"></script>
+	<script src="assets/js/jquery.lettering.js"></script>
+
+	<script src="assets/text.js"></script>
+	<script src="assets/js/subtle.js"></script>
+	<script src="assets/js/blue_text.js"></script>
+
+	<script src="assets/js/anim.js"></script>
+
+	<link rel="stylesheet" type="text/css" href="style.css">
+
+</head>
+<body>
+
+	<!-- "CANVAS" WHERE EVERYTHING HAPPENS -->
+	<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
+
+	<!-- SUBTLE TEXT WRAPPER -->
+	<ul id="subtle_text_wrapper"></ul>
+
+	<script>
+
+	    $(document).on("ready", function(){
+
+	    	// KEY EVENTS
+			$(window).on("keydown", function(e){
+
+				// BALLS
+				if ( e.which == 66 ) { // B
+					if ( Anim.ballsVis === false ) {
+						Anim.ballsVis = true;
+					} else {
+						Anim.ballsVis = false;
+					}
+				}
+
+				// BLUE TEXT
+				if ( e.which == 84 ) { // T
+					if ( BlueText.textVis === false ) {
+						BlueText.textVis = true;
+					} else {
+						BlueText.textVis = false;
+					}
+					BlueText.toggleVis();
+				}
+
+				// SUBTLE TEXT
+				if ( e.which == 83 ) { // S
+					if ( SubtleText.textVis === false ) {
+						SubtleText.textVis = true;
+					} else {
+						SubtleText.textVis = false;
+					}
+					SubtleText.toggleVis();
+				}
+
+			});
+
+	    	// KICKS OFF THREE.JS ANIMATION
+			Anim.init();
+			Anim.animate();
+
+			// TEXT ANIMATIONS
+	    	SubtleText.init( $("#subtle_text_wrapper"), 9000, 6000, 150 );   
+	    	BlueText.init();   
+
+	    });
+
+	</script>
+
+</body>
+</html>
