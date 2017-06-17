@@ -14,12 +14,17 @@ var Anim = {
 	// CUSTOM VARIABLES
 
 	ballsVis : false,
+	currentImg: 1, 
+	totalImgs: 20, 
+	fastForward: false, 
 
 	// FUNCTIONS
 
-	init: function () {
+	init: function ( _speed ) {
 
 		var self = this;
+
+		this.speed = _speed;
 
 		// SCENE
 		this.scene = new THREE.Scene();
@@ -53,8 +58,11 @@ var Anim = {
 		// CONTROLS
 		this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
 		
-		this.addBox( "moondust", 21000, 1 );	
-		this.addBox( "dawnmountain", 20000, 0.5 );
+		// this.addBox( "moondust", 21000, 1 );	
+		this.switchImages( "neg" );
+		this.switchImages( "pos" );
+		this.switchImages( "neg" );
+		this.switchImages( "pos" );
 		// 
 		
 
@@ -163,9 +171,6 @@ var Anim = {
 			vertexShader:   fShader.vertexShader,
 			fragmentShader: fShader.fragmentShader
 		});
-
-		// customMaterial.uniforms.opacity = 0;
-		// customMaterial.uniforms.needsUpdate = true;
 		
 		var mesh = new THREE.Mesh( geometry, customMaterial );
 		// scene.add(mesh);
@@ -190,43 +195,134 @@ var Anim = {
 		
 	}, 
 
-	addBox : function ( filename, size, _opacity ) {
+	switchImages: function ( side ) {
 
-		console.log("Anim.addBox", filename, _opacity );
+		console.log("Anim.switchImages", side);
 
-		// SKYBOX
+		// USE CURRENT IMAGE COUNTER IN OBJECT
+
 		// IMAGE SRCs
-		var imagePrefix = "assets/images/" + filename + "-";
-		var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
-		var imageSuffix = ".png";
+		var j = 1, // INDEX FOR FIRST LOOP
+			k = 0, 
+			imgs = [], // ARRAY OF TWO IMAGES
+			self = this;
+		this.urls = [];
+
+		// GET TWO IMAGES
+		while ( j < 3 ) {
+			// console.log(j);
+			if ( self.currentImg >= self.totalImgs ) {
+				self.currentImg = 1;
+			}
+			imgs.push( "assets/imagebank/img_" + self.currentImg + ".jpg" );
+			self.currentImg++;
+			j++;
+		}
+
+		// console.log( imgs );
+
+		if ( side === "pos" ) {
+			// ADD BACK+RIGHT ZPOS + XPOS
+
+			for ( var i = 0; i < 6; i++ ) {
+				if ( i === 0 || i === 4 ) {
+					this.urls.push( imgs[k] );
+					k++;
+				} else {
+					this.urls.push( "assets/imagebank/img_0.png" );
+				}
+			}	
+				
+			// img1, 0, 0, 0, img2, 0
+			// var directions  = ["xpos", "xneg", "zpos", "zneg"];
+
+			// X == 20, Y == 0, Z == 0
+			// X == 0, Y == 5, Z == 30
+			// X == 20, Y == 0, Z == 0
+			// X == 0, Y == -5, Z == -30
+
+		} else {
+			// ELSE : ADD ZNEG + XNEG
+
+			for ( var i = 0; i < 6; i++ ) {
+				if ( i === 1 || i === 5 ) {
+					this.urls.push( imgs[k] );
+					k++
+				} else {
+					this.urls.push( "assets/imagebank/img_0.png" );
+				}
+			}	
+
+			// 0, img1, 0, 0, 0, img2
+
+		}
+
+		this.addBox();
+
+	},
+
+	addBox : function () {
+
+		console.log("Anim.addBox" );
+
+		var size, _opacity;
+
+		// CHECK HOW MANY BOXES HAVE BEEN ADDED
+		if ( this.scene.children.length > 5 ) {
+			console.log( this.currentImg, this.scene.children );
+			this.scene.remove( this.scene.children[1] );
+		}
+
+		// if ( images === "moondust" ) {
+		// 	// size = 20000,
+		// 	// _opacity = 0.5;
+		// 	// imagePrefix + directions[i] + imageSuffix
+		// } else {
+			size = 15000 + ( this.currentImg * 0); 
+			_opacity = 0.5;			
+		// }
+
+		console.log( 285, size );
+
 		// SIZE OF CUBE
 		var skyGeometry = new THREE.CubeGeometry( size, size, size );
 
-		this.urls = [];
-		for (var i = 0; i < 6; i++)
-			this.urls.push( imagePrefix + directions[i] + imageSuffix );
-		
 		var materialArray = [];
-		for (var i = 0; i < 6; i++)
+		for (var i = 0; i < 6; i++) {
+			console.log( 295, this.urls[i] );
+			if ( this.urls[i] === "assets/imagebank/img_0.png" ) {
+				imgOpacity = 0;
+			} else {
+				imgOpacity = _opacity;
+			}
 			materialArray.push( new THREE.MeshBasicMaterial({
-				map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
+				map: THREE.ImageUtils.loadTexture( this.urls[i] ),
 				side: THREE.BackSide,
 				transparent: true, 
-				opacity: _opacity 
-			}));
+				opacity: imgOpacity 
+			}));			
+		}
 		var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
-		var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
+		var skyBox = new THREE.Mesh();
+		skyBox.geometry = skyGeometry;
+		skyBox.material = skyMaterial;
+		skyBox.name = "img-" + this.currentImg;
 		this.scene.add( skyBox );
 
 	},
 
 	animate: function () {
-	    
+
 		var self = this;
 
-	    requestAnimationFrame( this.animate.bind(this) );
-		this.render();		
-		this.update();
+		// REDUCE FRAME RATE TO 30 FPS
+	    setTimeout( function() {
+
+	        requestAnimationFrame( self.animate.bind(self) );
+			self.render();		
+			self.update();
+
+	    }, 1000 / 30 );
 
 	},
 
@@ -243,17 +339,36 @@ var Anim = {
 	render: function () {
 
 		// SPEED OF ROTATION
-		var speed = 0.00005,
-			distanceFromScene = 10, 
-			timer = Date.now() * speed;
+		var speed = this.speed;
 
-		this.camera.position.x = Math.cos( timer ) * distanceFromScene;
+		if ( this.fastForward ) {
+			speed = this.speed * 500;
+		}
+
+		console.log( 344, speed );
+
+		var distanceFromScene = 10, 
+			timer = this.clock.elapsedTime * speed, 
+			self = this;
+
+		// console.log( this.clock );
+
+		this.camera.position.x = Math.cos( timer ) * distanceFromScene * 2;
 		this.camera.position.z = Math.sin( timer ) * distanceFromScene * 3;
+		this.camera.position.y = Math.sin( timer ) * distanceFromScene * 0.5;
 		this.camera.lookAt( this.scene.position );
 
-		if ( this.camera.position.x.toFixed(3) == 10.000 ) {
-			// WHEN FACING XNEG
-			console.log("Switch");
+		// console.log( this.camera.position.x.toFixed(2), this.camera.position.y.toFixed(2), this.camera.position.z.toFixed(2) );
+		if ( this.camera.position.y.toFixed(4) == 5.0000 && this.camera.position.z.toFixed(4) == 30.0000 ) {
+			
+			console.log(341);
+			_.throttle(self.switchImages("pos"), 1000);
+
+		} else if ( this.camera.position.y.toFixed(4) == -5.0000 && this.camera.position.z.toFixed(4) == -30.0000 ) {
+			
+			console.log(350);
+			_.throttle(self.switchImages("neg"), 1000);
+
 		}
 
 		this.renderer.render( this.scene, this.camera );
@@ -440,6 +555,7 @@ var Anim = {
 		geometry.computeVertexNormals();
 	 	
 		return geometry;
+
 	}
 
 }

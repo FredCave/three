@@ -23,6 +23,7 @@
 
 	<script src="assets/js/shaders/FresnelShader.js"></script>
 
+	<script src="assets/js/underscore.min.js"></script>
 	<script src="assets/js/jquery-1.9.1.js"></script>
 	<script src="assets/js/jquery.lettering.js"></script>
 
@@ -59,6 +60,16 @@
 					}
 				}
 
+				// FAST FORWARD
+				if ( e.which == 70 ) { // F
+					console.log("F");
+					if ( Anim.fastForward === false ) {
+						Anim.fastForward = true;
+					} else {
+						Anim.fastForward = false;
+					}
+				}
+
 				// BLUE TEXT
 				if ( e.which == 84 ) { // T
 					if ( BlueText.textVis === false ) {
@@ -82,8 +93,8 @@
 			});
 
 	    	// KICKS OFF THREE.JS ANIMATION
-			Anim.init();
-			Anim.animate();
+			Anim.init( 0.05 );
+			Anim.animate(); // SPEED OF ANIMATION
 
 			// TEXT ANIMATIONS
 	    	SubtleText.init( $("#subtle_text_wrapper"), 9000, 6000, 150 );   
